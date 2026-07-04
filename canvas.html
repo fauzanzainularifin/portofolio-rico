@@ -6,11 +6,65 @@
     <title>Tampilan Canvas Figma | Portofolio</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .export-helper-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0.8rem 1.8rem;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            z-index: 10000;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+        .helper-link {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.8rem;
+        }
+        .helper-link:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        .single-page-mode {
+            padding: 0 !important;
+            margin: 0 !important;
+            background: var(--bg-color) !important;
+            width: 100% !important;
+            display: block !important;
+        }
+        .single-page-mode .artboard {
+            width: 1440px !important;
+            margin: 0 auto !important;
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+        }
+        @media (max-width: 1440px) {
+            .single-page-mode .artboard {
+                width: 100% !important;
+            }
+        }
+    </style>
 </head>
 <body class="canvas-mode">
 
     <!-- HOME ARTBOARD -->
-    <div class="artboard">
+    <div class="artboard" id="artboard-home">
         <div class="artboard-label">01 - BERANDA</div>
         <section id="home-canvas" class="hero" style="height: 900px;">
             <div class="container">
@@ -27,7 +81,7 @@
     </div>
 
     <!-- EXPLORE ARTBOARD -->
-    <div class="artboard">
+    <div class="artboard" id="artboard-explore">
         <div class="artboard-label">02 - JELAJAH</div>
         <section id="explore-canvas" class="section-padding" style="min-height: 900px;">
             <div class="container">
@@ -52,7 +106,7 @@
     </div>
 
     <!-- SKILLS ARTBOARD -->
-    <div class="artboard">
+    <div class="artboard" id="artboard-skills">
         <div class="artboard-label">03 - KEAHLIAN</div>
         <section id="skills-canvas" class="section-padding" style="background: var(--surface-color); min-height: 900px;">
             <div class="container">
@@ -82,7 +136,7 @@
     </div>
 
     <!-- TOOLS ARTBOARD -->
-    <div class="artboard">
+    <div class="artboard" id="artboard-tools">
         <div class="artboard-label">04 - ALAT</div>
         <section id="tools-canvas" class="section-padding" style="min-height: 900px;">
             <div class="container">
@@ -102,7 +156,7 @@
     </div>
 
     <!-- PROJECTS ARTBOARD -->
-    <div class="artboard">
+    <div class="artboard" id="artboard-proyek">
         <div class="artboard-label">05 - PROYEK</div>
         <section id="proyek-canvas" class="section-padding" style="background: var(--surface-color); min-height: 900px;">
             <div class="container">
@@ -137,5 +191,46 @@
         </section>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page');
+            
+            if (page) {
+                // Remove canvas mode styling
+                document.body.classList.remove('canvas-mode');
+                document.body.classList.add('single-page-mode');
+                
+                // Hide all artboards except the target one
+                const artboards = document.querySelectorAll('.artboard');
+                artboards.forEach(artboard => {
+                    const label = artboard.querySelector('.artboard-label');
+                    if (label) label.style.display = 'none'; // Hide the artboard label for clean import
+                    
+                    if (artboard.id !== 'artboard-' + page) {
+                        artboard.style.display = 'none';
+                    }
+                });
+            } else {
+                // Show a nice helper bar to guide the user
+                const helperBar = document.createElement('div');
+                helperBar.className = 'export-helper-bar';
+                helperBar.innerHTML = `
+                    <div style="font-weight: 600; margin-right: 1.2rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fab fa-figma" style="color: #f24e1e;"></i>
+                        <span>Ekspor per Halaman:</span>
+                    </div>
+                    <div style="display: flex; gap: 0.8rem; align-items: center;">
+                        <a href="?page=home" target="_blank" class="helper-link">01 - Beranda</a>
+                        <a href="?page=explore" target="_blank" class="helper-link">02 - Jelajah</a>
+                        <a href="?page=skills" target="_blank" class="helper-link">03 - Keahlian</a>
+                        <a href="?page=tools" target="_blank" class="helper-link">04 - Alat</a>
+                        <a href="?page=proyek" target="_blank" class="helper-link">05 - Proyek</a>
+                    </div>
+                `;
+                document.body.appendChild(helperBar);
+            }
+        });
+    </script>
 </body>
 </html>
