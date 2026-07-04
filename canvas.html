@@ -24,21 +24,41 @@
             font-family: 'Inter', sans-serif;
             font-size: 0.9rem;
         }
-        .helper-link {
+        .helper-tab {
             background: rgba(255, 255, 255, 0.08);
-            color: #fff;
-            padding: 0.4rem 1rem;
+            color: #ccc;
+            padding: 0.5rem 1.2rem;
             border-radius: 50px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-weight: 500;
             border: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .helper-link:hover {
+        .helper-tab:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .helper-tab.active {
+            color: #fff;
             background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            transform: translateY(-2px);
+            border-color: transparent;
             box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+        .close-helper-btn {
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 1.2rem;
+            margin-left: 1rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .close-helper-btn:hover {
+            color: #fff;
         }
         .single-page-mode {
             padding: 0 !important;
@@ -193,42 +213,92 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
+            const artboards = document.querySelectorAll('.artboard');
             
-            if (page) {
-                // Remove canvas mode styling
-                document.body.classList.remove('canvas-mode');
-                document.body.classList.add('single-page-mode');
-                
-                // Hide all artboards except the target one
-                const artboards = document.querySelectorAll('.artboard');
-                artboards.forEach(artboard => {
-                    const label = artboard.querySelector('.artboard-label');
-                    if (label) label.style.display = 'none'; // Hide the artboard label for clean import
-                    
-                    if (artboard.id !== 'artboard-' + page) {
-                        artboard.style.display = 'none';
+            // Create the navigation menu
+            const helperBar = document.createElement('div');
+            helperBar.className = 'export-helper-bar';
+            helperBar.innerHTML = `
+                <div style="font-weight: 600; margin-right: 1.2rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fab fa-figma" style="color: #f24e1e;"></i>
+                    <span>Tampilan:</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;" id="tab-container">
+                    <button class="helper-tab active" data-view="all">Semua Canvas</button>
+                    <button class="helper-tab" data-view="home">01 - Beranda</button>
+                    <button class="helper-tab" data-view="explore">02 - Jelajah</button>
+                    <button class="helper-tab" data-view="skills">03 - Keahlian</button>
+                    <button class="helper-tab" data-view="tools">04 - Alat</button>
+                    <button class="helper-tab" data-view="proyek">05 - Proyek</button>
+                </div>
+            `;
+            document.body.appendChild(helperBar);
+
+            const tabs = helperBar.querySelectorAll('.helper-tab');
+
+            function setView(viewName) {
+                // Update active tab button styling
+                tabs.forEach(tab => {
+                    if (tab.getAttribute('data-view') === viewName) {
+                        tab.classList.add('active');
+                    } else {
+                        tab.classList.remove('active');
                     }
                 });
-            } else {
-                // Show a nice helper bar to guide the user
-                const helperBar = document.createElement('div');
-                helperBar.className = 'export-helper-bar';
-                helperBar.innerHTML = `
-                    <div style="font-weight: 600; margin-right: 1.2rem; color: #fff; display: flex; align-items: center; gap: 0.5rem;">
-                        <i class="fab fa-figma" style="color: #f24e1e;"></i>
-                        <span>Ekspor per Halaman:</span>
-                    </div>
-                    <div style="display: flex; gap: 0.8rem; align-items: center;">
-                        <a href="?page=home" target="_blank" class="helper-link">01 - Beranda</a>
-                        <a href="?page=explore" target="_blank" class="helper-link">02 - Jelajah</a>
-                        <a href="?page=skills" target="_blank" class="helper-link">03 - Keahlian</a>
-                        <a href="?page=tools" target="_blank" class="helper-link">04 - Alat</a>
-                        <a href="?page=proyek" target="_blank" class="helper-link">05 - Proyek</a>
-                    </div>
-                `;
-                document.body.appendChild(helperBar);
+
+                if (viewName === 'all') {
+                    // Restore canvas mode styling
+                    document.body.classList.remove('single-page-mode');
+                    document.body.classList.add('canvas-mode');
+                    
+                    // Show all artboards and their labels
+                    artboards.forEach(artboard => {
+                        artboard.style.display = 'block';
+                        const label = artboard.querySelector('.artboard-label');
+                        if (label) label.style.display = 'block';
+                    });
+                } else {
+                    // Set single page mode styling
+                    document.body.classList.remove('canvas-mode');
+                    document.body.classList.add('single-page-mode');
+                    
+                    // Hide all artboards except the selected one, and hide all labels
+                    artboards.forEach(artboard => {
+                        const label = artboard.querySelector('.artboard-label');
+                        if (label) label.style.display = 'none';
+                        
+                        if (artboard.id === 'artboard-' + viewName) {
+                            artboard.style.display = 'block';
+                        } else {
+                            artboard.style.display = 'none';
+                        }
+                    });
+                }
+            }
+
+            // Add click event listeners to tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    setView(tab.getAttribute('data-view'));
+                });
+            });
+
+            // Add close button
+            const closeBtn = document.createElement('button');
+            closeBtn.innerHTML = '&times;';
+            closeBtn.className = 'close-helper-btn';
+            closeBtn.title = 'Sembunyikan Menu';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                helperBar.style.display = 'none';
+            });
+            helperBar.appendChild(closeBtn);
+
+            // Check query params just in case they still want to deep link
+            const params = new URLSearchParams(window.location.search);
+            const initialPage = params.get('page');
+            if (initialPage) {
+                setView(initialPage);
             }
         });
     </script>
